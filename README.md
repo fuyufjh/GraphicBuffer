@@ -6,7 +6,7 @@ This repository is for API 25, and along with using the code, the app needs to b
 
 Moreover, this README provides an example of usage of the buffer to obtain a rendered texture image using simple and fast `memcpy()` calls, both for `GraphicBuffer` (API <= 25) and `HardwareBuffer` (API > 25).
 
-The original implementation by @fuyufjh (branch `original` in this repo) is for API <= 23, and this one (branch `master`) is for API 25 (not clear which one works on API 24 but it definitely needs the system app trick [1]).
+The original implementation by `fuyufjh` (branch `original` in this repo) is for API <= 23, and this one (branch `master`) is for API 25 (not clear which one works on API 24 but it definitely needs the system app trick [1]).
 
 Inspired by [tcuAndroidInternals.cpp](https://android.googlesource.com/platform/external/deqp/+/master/framework/platform/android/tcuAndroidInternals.cpp)
 

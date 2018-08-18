@@ -26,15 +26,16 @@ void setFuncPtr (Func*& funcPtr, const DynamicLibrary& lib, const string& symnam
 #	warning "target CPU does not support ABI"
 #endif
 
-template <typename RT, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7>
-RT* callConstructor7 (void (*fptr)(), void* memory, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, T6 param6, T7 param7)
+template <typename RT, typename T1, typename T2, typename T3, typename T4, typename T5>
+RT* callConstructor5 (void (*fptr)(), void* memory, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5)
 {
 #if defined(CPU_ARM)
     // C1 constructors return pointer
-    typedef RT* (*ABIFptr)(void*, T1, T2, T3, T4, T5, T6, T7);
-    (void)((ABIFptr)fptr)(memory, param1, param2, param3, param4, param5, param6, param7);
+    typedef RT* (*ABIFptr)(void*, T1, T2, T3, T4, T5);
+    (void)((ABIFptr)fptr)(memory, param1, param2, param3, param4, param5);
     return reinterpret_cast<RT*>(memory);
 #else
+    qDebug() << "ERROR: UNSUPPORTED ARCH!";
     return nullptr;
 #endif
 }
@@ -71,7 +72,7 @@ static android::android_native_base_t* getAndroidNativeBase (android::GraphicBuf
 GraphicBuffer::GraphicBuffer(uint32_t width, uint32_t height, PixelFormat format, uint32_t usage):
     library("libui.so")
 {
-    setFuncPtr(functions.constructor, library, "_ZN7android13GraphicBufferC2EjjijjP13native_handleb");
+    setFuncPtr(functions.constructor, library, "_ZN7android13GraphicBufferC1EjjijNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE");
     setFuncPtr(functions.destructor, library, "_ZN7android13GraphicBufferD1Ev");
     setFuncPtr(functions.getNativeBuffer, library, "_ZNK7android13GraphicBuffer15getNativeBufferEv");
     setFuncPtr(functions.lock, library, "_ZN7android13GraphicBuffer4lockEjPPv");
@@ -86,17 +87,15 @@ GraphicBuffer::GraphicBuffer(uint32_t width, uint32_t height, PixelFormat format
     }
 
     try {
-        android::GraphicBuffer* const gb = callConstructor7<android::GraphicBuffer, uint32_t, uint32_t, PixelFormat, uint32_t,
-                uint32_t, void*, bool>(
+        static std::string name = std::string("DirtyHackUser");
+        android::GraphicBuffer* const gb = callConstructor5<android::GraphicBuffer, uint32_t, uint32_t, PixelFormat, uint32_t, std::string *>(
                 functions.constructor,
                 memory,
                 width,
                 height,
                 format,
                 usage,
-                    1,
-                    nullptr,
-                    false
+                &name
                 );
         android::android_native_base_t* const base = getAndroidNativeBase(gb);
         status_t ctorStatus = functions.initCheck(gb);

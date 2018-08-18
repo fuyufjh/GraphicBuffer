@@ -47,7 +47,7 @@ GraphicBuffer* graphicBuf = new GraphicBuffer(width, height, PIXEL_FORMAT_RGBA_8
 auto clientBuf = (EGLClientBuffer) graphicBuf->getNativeBuffer();
 
 // obtaining the EGL display
-EGLDisplay disp = eglGetDisplay(EGL_DEFAULT_DISPLAY); EGL_CHECK_ERROR();
+EGLDisplay disp = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 
 // specifying the image attributes
 EGLint eglImageAttributes[] = {EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
@@ -146,7 +146,7 @@ AHardwareBuffer_describe(graphicBuf, &usage1);
 EGLClientBuffer clientBuf = eglGetNativeClientBufferANDROID(graphicBuf);
 
 // obtaining the EGL display
-EGLDisplay disp = eglGetDisplay(EGL_DEFAULT_DISPLAY); EGL_CHECK_ERROR();
+EGLDisplay disp = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 
 // specifying the image attributes
 EGLint eglImageAttributes[] = {EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};

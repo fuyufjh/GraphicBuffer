@@ -6,6 +6,8 @@ This repository is for API 25, and along with using the code, the app needs to b
 
 Moreover, this README provides an example of usage of the buffer to obtain a rendered texture image using simple and fast `memcpy()` calls, both for `GraphicBuffer` (API <= 25) and `HardwareBuffer` (API > 25).
 
+The original implementation by @fuyufjh (branch `original` in this repo) is for API <= 23, and this one (branch `master`) is for API 25 (not clear which one works on API 24 but it definitely needs the system app trick [1]).
+
 Inspired by [tcuAndroidInternals.cpp](https://android.googlesource.com/platform/external/deqp/+/master/framework/platform/android/tcuAndroidInternals.cpp)
 
 # How to use
@@ -25,7 +27,7 @@ An example for API <= 25 using this repository, GraphicBuffer:
 #define GL_GLEXT_PROTOTYPES
 #include "GLES/glext.h"
 
-// for API 25 use this repo, for API <23 see the https://github.com/fuyufjh/GraphicBuffer
+// for API 25 use this repo, for API <= 23 see the https://github.com/fuyufjh/GraphicBuffer
 // Also add -lEGL at link stage
 #include "GraphicBuffer.h" 
 
@@ -195,11 +197,11 @@ AHardwareBuffer_unlock(graphicBuf, nullptr); // worth checking return code
 ```
 
 # How to access private libraries on API 25
-On API 26, there is a public `HardwareBuffer` [1] option which replaces GraphicBuffer hacks. On API < 24 the hack from the original repo worked because the access to private libraries such as `libui.so` was allowed.
+On API 26, there is a public `HardwareBuffer` [1] option which replaces GraphicBuffer hacks. On API <= 23 the hack from the original repo worked because the access to private libraries such as `libui.so` was allowed.
 
 It's still allowed [2] in 25, however, `libui.so` also requires `gralloc.exynos5.so` (see full list of its dependencies [3]) which is **not allowed to use on API 25**. The app is killed when trying to dlopen `libui.so` (on `new GraphicBuffer()`).
 
-It seems that there is a solution for API < 24 and for API >= 26, but on 24 and 25 it seems that it's impossible to use any kind of GraphicBuffer-like access.
+It seems that there is a solution for API <= 23 and for API >= 26, but on 24 and 25 it seems that it's impossible to use any kind of GraphicBuffer-like access.
 
 The solution for API 25, along with using code from this repository, is to make your application a system application.
 It requires root privileges.

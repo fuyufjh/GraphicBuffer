@@ -15,7 +15,7 @@ Inspired by [tcuAndroidInternals.cpp](https://android.googlesource.com/platform/
 The usage is exactly the same with `android::GraphicBuffer` on API <= 25 or `HardwareBuffer` on API >= 26.
 The example below shows a pseudo-code which renders something to a texture attached to a framebuffer and get the result using simple `memcpy()` calls.
 Examples for both API >= 26 (HardwareBuffer) and API < 26 (GraphicBuffer) are provided.
-If something doesn't work, it's worth checking if pointers are valid, if there are any errors from Android system and also checking return codes with `glGetError` if drawing issues occur.
+If something doesn't work, it's worth checking if pointers are valid, if `eglGetError()` shows no issues, if there are any errors from Android system and also checking return codes with `glGetError()` if drawing issues occur.
 
 An example for API <= 25 using this repository, GraphicBuffer:
 ```c++

@@ -4,18 +4,18 @@ Use GraphicBuffer class in Android native code in your project, without compilin
 
 This repository is for API 25, and along with using the code, the app needs to be a system app. See details below.
 
-Moreover, this README provides an example of usage of the buffer to obtain a rendered texture image using simple and fast `memcpy()` calls, both for `GraphicBuffer` (API < 25) and `HardwareBuffer` (API > 25).
+Moreover, this README provides an example of usage of the buffer to obtain a rendered texture image using simple and fast `memcpy()` calls, both for `GraphicBuffer` (API <= 25) and `HardwareBuffer` (API > 25).
 
 Inspired by [tcuAndroidInternals.cpp](https://android.googlesource.com/platform/external/deqp/+/master/framework/platform/android/tcuAndroidInternals.cpp)
 
 # How to use
 
-The usage is exactly the same with `android::GraphicBuffer` or `HardwareBuffer` on API >= 26.
+The usage is exactly the same with `android::GraphicBuffer` on API <= 25 or `HardwareBuffer` on API >= 26.
 The example below shows a pseudo-code which renders something to a texture attached to a framebuffer and get the result using simple `memcpy()` calls.
 Examples for both API >= 26 (HardwareBuffer) and API < 26 (GraphicBuffer) are provided.
 If something doesn't work, it's worth checking if pointers are valid, if there are any errors from Android system and also checking return codes with `glGetError` if drawing issues occur.
 
-GraphicBuffer
+An example for API <= 25 using this repository, GraphicBuffer:
 ```c++
 // for EGL calls
 #define EGL_EGLEXT_PROTOTYPES
@@ -96,7 +96,7 @@ graphicBuf->unlock();
 ```
 
 Example for API >= 26. This repository is NOT needed, because there is an open alternative in NDK [1].
-The example does exactly the same.
+The example does exactly the same thing as the one above.
 ```c++
 // for EGL calls
 #define EGL_EGLEXT_PROTOTYPES
@@ -135,7 +135,7 @@ AHardwareBuffer* graphicBuf;
 AHardwareBuffer_allocate(&usage, &graphicBuf); // it's worth to check the return code
 
 // ACTUAL parameters of the AHardwareBuffer which it reports
-AHardwareBuffer_Desc usage;
+AHardwareBuffer_Desc usage1;
 
 // for stride, see below
 AHardwareBuffer_describe(graphicBuf, &usage1);
@@ -236,7 +236,7 @@ It will produce output similar to this:
 Find a constructor that is suitable for you. Try googling for source code of `GraphicBuffer.cpp` for your API, for example: https://android.googlesource.com/platform/frameworks/native/+/jb-dev/libs/ui/GraphicBuffer.cpp. Once you have identified the constructor signature you would like to use, find the name of it's symbol in
 
 ```
-# same as above by without -C
+# same as above but without -C
 $ /somewhere/android-ndk/find-it/arm-linux-androideabi-gcc-nm -D libui.so | grep GraphicBuffer | sort
 ```
 
@@ -248,5 +248,7 @@ For lower APIs (unclear which ones), the solution at https://github.com/fuyufjh/
 4. Debug the code using `print` statements showing error codes
 
 [1] https://developer.android.com/ndk/guides/stable_apis https://developer.android.com/reference/android/hardware/HardwareBuffer
+
 [2] https://developer.android.com/about/versions/nougat/android-7.0-changes
+
 [3] `libbacktrace.so libbase.so libbinder.so libc.so libc++.so libcutils.so libdl.so gralloc.exynos5.so libhardware.so libion.so liblog.so liblzma.so libm.so libsync.so libui.so libunwind.so libutils.so`, obtained by a simple recursive jupyter notebook using `!{readelf_bin} -d {file} | grep NEEDED`

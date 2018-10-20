@@ -2,11 +2,11 @@
 
 Use GraphicBuffer class in Android native code in your project, without compiling with Android source code.
 
-This repository is for API 25, and along with using the code, the app needs to be a system app. See details below.
+This repository is for APIs 23-27. API 23 is supported without additional tricks, APIs 24-25 need making your application a system application.
 
-Moreover, this README provides an example of usage of the buffer to obtain a rendered texture image using simple and fast `memcpy()` calls, both for `GraphicBuffer` (API <= 25) and `HardwareBuffer` (API > 25).
+APIs 26 and 27 do not need code from this repository since a more convenient alternative is available: `HardwareBuffer`.
 
-The original implementation by `fuyufjh` (branch `original` in this repo) is for API <= 23, and this one (branch `master`) is for API 25 (not clear which one works on API 24 but it definitely needs the system app trick [1]).
+Moreover, this README provides an example of usage of the buffer to obtain a rendered texture image using simple and fast `memcpy()` calls, both for `GraphicBuffer` (API <= 23) and `HardwareBuffer` (API >= 26).
 
 Inspired by [tcuAndroidInternals.cpp](https://android.googlesource.com/platform/external/deqp/+/master/framework/platform/android/tcuAndroidInternals.cpp)
 
@@ -27,7 +27,7 @@ An example for API <= 25 using this repository, GraphicBuffer:
 #define GL_GLEXT_PROTOTYPES
 #include "GLES/glext.h"
 
-// for API 25 use this repo, for API <= 23 see the https://github.com/fuyufjh/GraphicBuffer
+// Use code from this repository. Note that define __ANDROID_API__ must be set properly for it to work
 // Also add -lEGL at link stage
 #include "GraphicBuffer.h" 
 

@@ -26,6 +26,29 @@ void setFuncPtr (Func*& funcPtr, const DynamicLibrary& lib, const string& symnam
 #	warning "target CPU does not support ABI"
 #endif
 
+template <typename RT, typename T1, typename T2, typename T3, typename T4>
+RT* callConstructor4 (void (*fptr)(), void* memory, T1 param1, T2 param2, T3 param3, T4 param4)
+{
+#if defined(CPU_ARM)
+    // C1 constructors return pointer
+    typedef RT* (*ABIFptr)(void*, T1, T2, T3, T4);
+    (void)((ABIFptr)fptr)(memory, param1, param2, param3, param4);
+    return reinterpret_cast<RT*>(memory);
+#elif defined(CPU_ARM_64)
+    // C1 constructors return void
+    typedef void (*ABIFptr)(void*, T1, T2, T3, T4);
+    ((ABIFptr)fptr)(memory, param1, param2, param3, param4);
+    return reinterpret_cast<RT*>(memory);
+#elif defined(CPU_X86) || defined(CPU_X86_64)
+    // ctor returns void
+    typedef void (*ABIFptr)(void*, T1, T2, T3, T4);
+    ((ABIFptr)fptr)(memory, param1, param2, param3, param4);
+    return reinterpret_cast<RT*>(memory);
+#else
+    return nullptr;
+#endif
+}
+
 template <typename RT, typename T1, typename T2, typename T3, typename T4, typename T5>
 RT* callConstructor5 (void (*fptr)(), void* memory, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5)
 {
@@ -34,8 +57,17 @@ RT* callConstructor5 (void (*fptr)(), void* memory, T1 param1, T2 param2, T3 par
     typedef RT* (*ABIFptr)(void*, T1, T2, T3, T4, T5);
     (void)((ABIFptr)fptr)(memory, param1, param2, param3, param4, param5);
     return reinterpret_cast<RT*>(memory);
+#elif defined(CPU_ARM_64)
+    // C1 constructors return void
+    typedef void (*ABIFptr)(void*, T1, T2, T3, T4, T5);
+    ((ABIFptr)fptr)(memory, param1, param2, param3, param4, param5);
+    return reinterpret_cast<RT*>(memory);
+#elif defined(CPU_X86) || defined(CPU_X86_64)
+    // ctor returns void
+    typedef void (*ABIFptr)(void*, T1, T2, T3, T4, T5);
+    ((ABIFptr)fptr)(memory, param1, param2, param3, param4, param5);
+    return reinterpret_cast<RT*>(memory);
 #else
-    qDebug() << "ERROR: UNSUPPORTED ARCH!";
     return nullptr;
 #endif
 }
@@ -72,7 +104,19 @@ static android::android_native_base_t* getAndroidNativeBase (android::GraphicBuf
 GraphicBuffer::GraphicBuffer(uint32_t width, uint32_t height, PixelFormat format, uint32_t usage):
     library("libui.so")
 {
+    // See README of the repository to understand the issue with versions
+
+    #if __ANDROID_API__ <= 23
+    #warning "Android API 23 or elss detected. Using OLD constructor style for GraphicBuffer"
+    setFuncPtr(functions.constructor, library, "_ZN7android13GraphicBufferC1Ejjij");
+    #elif (__ANDROID_API__ >= 24) && (__ANDROID_API__ <= 25)
+    #warning "Android API 24 or 25 detected. Using NEW constructor style for GraphicBuffer"
+    #warning "Note that the app now uses private android libraries. One of the workarounds is to make your app a system app"
+    #warning "See README of the GraphicBuffer repository for more details"
     setFuncPtr(functions.constructor, library, "_ZN7android13GraphicBufferC1EjjijNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE");
+    #elif __ANDROID_API__ >= 26
+        #error "You are trying to use GraphicBuffer hack for API 26 or higher. You can use the 'legal' HardwareBuffer instead, see README in the repository"
+    #endif
     setFuncPtr(functions.destructor, library, "_ZN7android13GraphicBufferD1Ev");
     setFuncPtr(functions.getNativeBuffer, library, "_ZNK7android13GraphicBuffer15getNativeBufferEv");
     setFuncPtr(functions.lock, library, "_ZN7android13GraphicBuffer4lockEjPPv");
@@ -87,7 +131,19 @@ GraphicBuffer::GraphicBuffer(uint32_t width, uint32_t height, PixelFormat format
     }
 
     try {
+        #if (__ANDROID_API__ >= 23) && (__ANDROID_API__ <= 24)
+        android::GraphicBuffer* const gb = callConstructor4<android::GraphicBuffer, uint32_t, uint32_t, PixelFormat, uint32_t>(
+                functions.constructor,
+                memory,
+                width,
+                height,
+                format,
+                usage
+                );
+        #elif __ANDROID_API__ >= 26
+        // the name for the graphic buffer
         static std::string name = std::string("DirtyHackUser");
+
         android::GraphicBuffer* const gb = callConstructor5<android::GraphicBuffer, uint32_t, uint32_t, PixelFormat, uint32_t, std::string *>(
                 functions.constructor,
                 memory,
@@ -97,6 +153,8 @@ GraphicBuffer::GraphicBuffer(uint32_t width, uint32_t height, PixelFormat format
                 usage,
                 &name
                 );
+        #endif
+
         android::android_native_base_t* const base = getAndroidNativeBase(gb);
         status_t ctorStatus = functions.initCheck(gb);
 

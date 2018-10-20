@@ -196,20 +196,20 @@ for (int row = 0; row < height; row++) {
 AHardwareBuffer_unlock(graphicBuf, nullptr); // worth checking return code
 ```
 
-# How to access private libraries on API 25
-On API 26, there is a public `HardwareBuffer` [1] option which replaces GraphicBuffer hacks. On API <= 23 the hack from the original repo worked because the access to private libraries such as `libui.so` was allowed.
+# How to access private libraries on API 24-25
+On API 26, there is a public `HardwareBuffer` [1] option which replaces GraphicBuffer hacks. On API <= 23 the hack from the repo worked because the access to private libraries such as `libui.so` was allowed.
 
-It's still allowed [2] in 25, however, `libui.so` also requires `gralloc.exynos5.so` (see full list of its dependencies [3]) which is **not allowed to use on API 25**. The app is killed when trying to dlopen `libui.so` (on `new GraphicBuffer()`).
+It's still allowed [2] in 24-25, however, `libui.so` also requires `gralloc.exynos5.so` (see full list of its dependencies [3]) which is **not allowed to use on API 24-25**. The app is killed when trying to dlopen `libui.so` (on `new GraphicBuffer()`).
 
 It seems that there is a solution for API <= 23 and for API >= 26, but on 24 and 25 it seems that it's impossible to use any kind of GraphicBuffer-like access.
 
-The solution for API 25, along with using code from this repository, is to make your application a system application.
+The solution for API 24-25, along with using code from this repository, is to make your application a system application.
 It requires root privileges.
 The process is described in https://stackoverflow.com/questions/24641604/qt-application-as-system-app-on-android for Qt-based apps.
 
 # How to tweak API
 
-The original version in https://github.com/fuyufjh/GraphicBuffer/blob/fa346e1f6266a717758d32aee9c75c85da8a7263/GraphicBuffer.cpp uses the `_ZN7android13GraphicBufferC1Ejjij` constructor symbol, which was replaced by `_ZN7android13GraphicBufferC1EjjijNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE` in API 25 (a std::string argument added at the end). This repository works for the API 25 and the original one works for the lower versions.
+The API 23 version in https://github.com/fuyufjh/GraphicBuffer/blob/fa346e1f6266a717758d32aee9c75c85da8a7263/GraphicBuffer.cpp uses the `_ZN7android13GraphicBufferC1Ejjij` constructor symbol, which was replaced by `_ZN7android13GraphicBufferC1EjjijNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE` in API 24-25 (a std::string argument added at the end). This repository works for the API 24-25 as well.
 
 Since I'm not sure if any other APIs have different constructors, below you can find directions on how to tweak the code for your API.
 
@@ -242,11 +242,11 @@ Find a constructor that is suitable for you. Try googling for source code of `Gr
 $ /somewhere/android-ndk/find-it/arm-linux-androideabi-gcc-nm -D libui.so | grep GraphicBuffer | sort
 ```
 
-Copy the name of the symbol, for example: `_ZN7android13GraphicBufferC1EjjijNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE`. It corresponds 1-to-1 to the human-readable signature. For my API 25 the difference from https://github.com/fuyufjh/GraphicBuffer was that there was an `std::string` argument added.
+Copy the name of the symbol, for example: `_ZN7android13GraphicBufferC1EjjijNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE`. It corresponds 1-to-1 to the human-readable signature. For my API 24-25 the difference from API 23 code was that there was an `std::string` argument added.
 
-For lower APIs (unclear which ones), the solution at https://github.com/fuyufjh/GraphicBuffer uses `_ZN7android13GraphicBufferC1Ejjij` which is absent in API 25.
+For lower APIs (unclear which ones) the solution uses `_ZN7android13GraphicBufferC1Ejjij` which is absent in API 24-25.
 
-3. Having identified your constructor, change the code in `GraphicBuffer.cpp` appropriately. For API 25 a `std::string` argument was added, it has to be passed by reference and the variable with the string should remain after function call ends (I just made it `static`).
+3. Having identified your constructor, change the code in `GraphicBuffer.cpp` appropriately. For API 24-25 a `std::string` argument was added, it has to be passed by reference and the variable with the string should remain after function call ends (I just made it `static`).
 4. Debug the code using `print` statements showing error codes
 
 [1] https://developer.android.com/ndk/guides/stable_apis https://developer.android.com/reference/android/hardware/HardwareBuffer

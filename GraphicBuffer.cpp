@@ -141,9 +141,9 @@ GraphicBuffer::GraphicBuffer(uint32_t width, uint32_t height, PixelFormat format
     #warning "See README of the GraphicBuffer repository for more details"
     setFuncPtr(functions.constructor, library, "_ZN7android13GraphicBufferC1EjjijNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE");
     #elif __ANDROID_API__ >= 26
-        #error "You are trying to use GraphicBuffer hack for API 26 or higher. You can use the 'legal' HardwareBuffer instead, see README in the repository"
+        #warning "You are trying to use GraphicBuffer hack for API 26 or higher. You can use the 'legal' HardwareBuffer instead, see README in the repository"
     #else
-        #error "Invalid settings detected. Please set __ANDROID_API__ to a valid value"
+        #warning "Invalid settings detected. Please set __ANDROID_API__ to a valid value"
     #endif
     setFuncPtr(functions.destructor, library, "_ZN7android13GraphicBufferD1Ev");
     setFuncPtr(functions.getNativeBuffer, library, "_ZNK7android13GraphicBuffer15getNativeBufferEv");

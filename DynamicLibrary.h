@@ -1,3 +1,8 @@
+/**
+ * @file DynamicLibrary.h
+ * @brief This class implements a C++ wrapper to load shared libraries (.so)
+ */
+
 #pragma once
 
 #include <exception>
@@ -9,6 +14,11 @@ public:
     DynamicLibrary(const char *fileName);
     ~DynamicLibrary();
 
+    /**
+     * @brief getFunctionPtr Resolve the symbol name
+     * @param name The symbol name to resolve
+     * @return The resolved function
+     */
     void *getFunctionPtr(const char *name) const;
 
     DynamicLibrary(const DynamicLibrary &) = delete;

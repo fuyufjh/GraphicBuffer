@@ -107,7 +107,7 @@ GraphicBuffer::GraphicBuffer(uint32_t width, uint32_t height, PixelFormat format
     // See README of the repository to understand the issue with versions
 
     #if __ANDROID_API__ <= 23
-    #warning "Android API 23 or elss detected. Using OLD constructor style for GraphicBuffer"
+    #warning "Android API 23 or less detected. Using OLD constructor style for GraphicBuffer"
     setFuncPtr(functions.constructor, library, "_ZN7android13GraphicBufferC1Ejjij");
     #elif (__ANDROID_API__ >= 24) && (__ANDROID_API__ <= 25)
     #warning "Android API 24 or 25 detected. Using NEW constructor style for GraphicBuffer"

@@ -2,7 +2,7 @@
 
 #include <string>
 #include <cstdlib>
-#include <iostream>
+#include <android/log.h>
 
 using std::string;
 
@@ -154,7 +154,7 @@ GraphicBuffer::GraphicBuffer(uint32_t width, uint32_t height, PixelFormat format
     // allocating memory for GraphicBuffer object
     void *const memory = malloc(GRAPHICBUFFER_SIZE);
     if (memory == nullptr) {
-        std::cerr << "Could not alloc for GraphicBuffer" << std::endl;
+        __android_log_print(ANDROID_LOG_ERROR, "GraphicBuffer", "Could not alloc for GraphicBuffer");
         return;
     }
 
@@ -196,17 +196,19 @@ GraphicBuffer::GraphicBuffer(uint32_t width, uint32_t height, PixelFormat format
         if (ctorStatus) {
             // ctor failed
             callDestructor<android::GraphicBuffer>(functions.destructor, gb);
-            std::cerr << "GraphicBuffer constructor failed, initCheck returned " << ctorStatus << std::endl;
+            __android_log_print(ANDROID_LOG_ERROR, "GraphicBuffer", "GraphicBuffer constructor failed, initCheck returned %d", ctorStatus);
         }
 
         // check object layout
-        if (base->magic != 0x5f626672u) // "_bfr"
-            std::cerr << "GraphicBuffer layout unexpected" << std::endl;
+        if (base->magic != 0x5f626672u) { // "_bfr"
+            __android_log_print(ANDROID_LOG_ERROR, "GraphicBuffer", "GraphicBuffer layout unexpected");
+        }
 
         // check object version
         const uint32_t expectedVersion = sizeof(void *) == 4 ? 96 : 168;
-        if (base->version != expectedVersion)
-            std::cerr << "GraphicBuffer version unexpected" << std::endl;
+        if (base->version != expectedVersion) {
+            __android_log_print(ANDROID_LOG_ERROR, "GraphicBuffer", "GraphicBuffer version unexpected");
+        }
 
         // reference count
         base->incRef(base);
@@ -215,7 +217,7 @@ GraphicBuffer::GraphicBuffer(uint32_t width, uint32_t height, PixelFormat format
         impl = gb;
     } catch (...) {
         // freeing memory on error
-        std::cerr << "GraphicBuffer constructor failed" << std::endl;
+        __android_log_print(ANDROID_LOG_ERROR, "GraphicBuffer", "GraphicBuffer constructor failed");
         free(memory);
         throw;
     }

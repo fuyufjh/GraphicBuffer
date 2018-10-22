@@ -1,7 +1,7 @@
 #include "DynamicLibrary.h"
 
-#include <iostream>
 #include <dlfcn.h>
+#include <android/log.h>
 
 DynamicLibrary::DynamicLibrary(const char *fileName)
 {
@@ -16,9 +16,9 @@ DynamicLibrary::~DynamicLibrary()
 
 void *DynamicLibrary::getFunctionPtr(const char *name) const
 {
-    auto ret = (void *)dlsym(libHandle, name);
+    auto ret = (void *) dlsym(libHandle, name);
     if (ret == nullptr) {
-        std::cerr << "Failed to get function " << name << std::endl;
+        __android_log_print(ANDROID_LOG_ERROR, "GraphicBuffer", "Failed to get function %s", name);
     }
     return ret;
 }

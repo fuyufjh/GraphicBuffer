@@ -1,8 +1,17 @@
+/**
+ * @file GraphicBuffer.h
+ * @brief This class implements the GraphicBuffer hack for
+ * Android API <= 25 replacing the missing HardwareBuffer
+ * functionality present in API >= 26
+ */
+
 #pragma once
 
 #include "DynamicLibrary.h"
 #include <cstdint>
 #include <cerrno>
+
+// Defining the required supplementary structures
 
 struct ANativeWindowBuffer;
 
@@ -91,10 +100,13 @@ struct GraphicBufferFunctions
     initCheckFunc					initCheck;
 };
 
+/** @class The GraphicBuffer wrapper */
 class GraphicBuffer
 {
 public:
-    // ui/GraphicBuffer.h, hardware/gralloc.h
+    /** @brief Usage types for the buffer
+     * @see ui/GraphicBuffer.h, hardware/gralloc.h
+     */
     enum {
         USAGE_SW_READ_NEVER		= 0x00000000,
         USAGE_SW_READ_RARELY	= 0x00000002,
@@ -118,12 +130,20 @@ public:
         USAGE_HW_MASK			= 0x00071F00,
     };
 
+    /**
+     * @brief GraphicBuffer constructor
+     * @param width Width of the buffer
+     * @param height Height of the buffer
+     * @param format An element from the PixelFormat enum
+     * @param usage An element from the usage enum in GraphicBuffer class (USAGE_*)
+     */
     GraphicBuffer(uint32_t width, uint32_t height, PixelFormat format, uint32_t usage);
     ~GraphicBuffer();
 
     status_t lock(uint32_t usage, void** vaddr);
     status_t unlock();
     ANativeWindowBuffer *getNativeBuffer() const;
+
     uint32_t getStride() const;
 
 private:

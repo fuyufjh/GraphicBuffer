@@ -153,22 +153,35 @@ EGLint eglImageAttributes[] = {EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
 
 // creating an EGL image
 EGLImageKHR imageEGL = eglCreateImageKHR(disp, EGL_NO_CONTEXT, EGL_NATIVE_BUFFER_ANDROID, clientBuf, eglImageAttributes);
-
-// Doing some OpenGL rendering like glDrawArrays
-// Shaders also work, need `#extension GL_OES_EGL_image_external_essl3 : require`
-// Now the result is inside the FBO my_handle
-
+/**
+ * @note this part should be earlies than any draw or framebuffer options.
+ * @note refer to answer of @solidpixel at https://stackoverflow.com/questions/64447069/use-gleglimagetargettexture2does-to-replace-glreadpixels-on-android
+ * @{
+ */
 // binding the OUTPUT texture
 gl->glBindTexture(GL_TEXTURE_2D, my_texture);
 
 // attaching an EGLImage to OUTPUT texture
 glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, imageEGL);
+/**
+ * @}
+ */
+// Doing some OpenGL rendering like glDrawArrays
+// Shaders also work, need `#extension GL_OES_EGL_image_external_essl3 : require`
+// Now the result is inside the FBO my_handle
 
 // Obtaining the content image:
 
 // pointer for reading and writing texture data
 void *readPtr, *writePtr;
-
+/**
+ * @note We must make sure all drawing options finished before read back.
+ * @{
+ */
+ glFinish();
+ /**
+ * @}
+ */
 // locking the buffer
 AHardwareBuffer_lock(graphicBuf, AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN, -1, nullptr, (void**) &readPtr); // worth checking return code
 
